@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { GenericResponse, ILoginResponse, LoginInput, RegisterInput } from './types';
+import { GenericResponse, ILoginResponse, IUserResponse, LoginInput, RegisterInput } from './types';
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const authApi = axios.create({
@@ -10,7 +10,7 @@ export const authApi = axios.create({
 authApi.defaults.headers.common['Content-Type'] = 'application/json';
 
 export const refreshAccessTokenFn = async () => {
-  const response = await authApi.get<ILoginResponse>('auth/refresh');
+  const response = await authApi.get<ILoginResponse>('auth/refresh-token');
   return response.data;
 };
 
@@ -43,5 +43,11 @@ export const loginUserFn = async (user: LoginInput) => {
 
 export const logoutUserFn = async () => {
   const response = await authApi.get<GenericResponse>('auth/logout');
+  return response.data;
+};
+
+
+export const getMeFn = async () => {
+  const response = await authApi.get<IUserResponse>('auth/me');
   return response.data;
 };
