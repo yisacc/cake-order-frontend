@@ -8,7 +8,8 @@ const CONTENT = {
   createAccount: "Create an account",
   alreadyHaveAccount: "Already have an account?",
   loginHere: "Login here",
-  Logo
+  Logo,
+  signinLink: "/signin",
 }
 
 export default CONTENT;
