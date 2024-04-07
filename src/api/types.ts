@@ -27,3 +27,10 @@ export interface LoginInput {
   email: string;
   password: string;
 }
+
+export interface IUserResponse {
+  status: string;
+  data: {
+    user: IUser;
+  };
+}
