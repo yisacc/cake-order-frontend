@@ -17,9 +17,13 @@ export interface ILoginResponse {
   access_token: string;
 }
 
-export interface IUserResponse {
-  status: string;
-  data: {
-    user: IUser;
-  };
+
+export interface RegisterInput {
+  email: string;
+  password: string;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
 }
