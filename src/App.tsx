@@ -1,5 +1,5 @@
-import './App.css'
-import Routings from './routes/Routings'
+import '~/styles/App.css'
+import Routings from '~/routes/Routings'
 
 function App() {
 
