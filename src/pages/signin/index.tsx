@@ -2,11 +2,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Form, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { TypeOf, object, string } from "zod";
 import { getMeFn, loginUserFn } from "~/api/auth-api";
 import { ILoginResponse, IUser } from "~/api/types";
+import FormField from "~/components/FormField";
 import CONTENT from "~/data/signin-data";
 import useQueryEvents from "~/lib/query-wrapper";
 import { useStateContext } from "~/providers/user-provider";
@@ -27,9 +28,7 @@ export type LoginInput = TypeOf<typeof loginSchema>;
 const Signin = () => {
 
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const from = ((location.state as any)?.from.pathname as string) || '/';
 
   const methods = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -55,7 +54,7 @@ const Signin = () => {
     onSuccess: () => {
       query.refetch();
       toast.success('You successfully logged in');
-      navigate(from);
+      navigate('/dashboard');
     },
     onError: (error: any) => {
       console.log(error)
@@ -78,7 +77,7 @@ const Signin = () => {
     reset,
     handleSubmit,
     register,
-    formState: { isSubmitSuccessful },
+    formState: { isSubmitSuccessful, errors },
   } = methods;
 
   useEffect(() => {
@@ -108,11 +107,25 @@ const Signin = () => {
               <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit(onSubmitHandler)}>
                 <div>
                   <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{CONTENT.email}</label>
-                  <input {...register("email")} type="email" name="email" id="email" className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@company.com" />
+                  <FormField
+                    type="email"
+                    name="email"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="name@company.com"
+                    register={register}
+                    error={errors.email}
+                  />
                 </div>
                 <div>
                   <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{CONTENT.password}</label>
-                  <input {...register("password")} type="password" name="password" id="password" placeholder="••••••••" className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                  <FormField
+                    type="password"
+                    name="password"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="••••••••"
+                    register={register}
+                    error={errors.password}
+                  />
                 </div>
                 <button disabled={status === "pending"} type="submit" className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">{CONTENT.signin}</button>
                 <p className="text-sm font-light text-gray-500 dark:text-gray-400">

@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { TypeOf, object, string } from "zod";
 import { signUpUserFn } from "~/api/auth-api";
@@ -27,7 +28,7 @@ export type RegisterInput = TypeOf<typeof registerSchema>;
 
 
 const Signup = () => {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const methods = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -37,6 +38,7 @@ const Signup = () => {
     mutationFn: (userData: Omit<RegisterInput, 'passwordConfirm'>) => signUpUserFn(userData),
     onSuccess(data) {
       toast.success(data?.message);
+      navigate('/signin');
     },
     onError(error: any) {
       if (Array.isArray((error as any).response.data.error)) {
