@@ -5,6 +5,7 @@ const Home = React.lazy(() => import('~/pages/home'));
 const Signin = React.lazy(() => import('~/pages/signin'));
 const Signup = React.lazy(() => import('~/pages/signup'));
 const Dashboard = React.lazy(() => import('~/pages/dashboard'));
+const NewOrder = React.lazy(() => import('~/pages/dashboard/new-order'));
 
 export const routes: Array<PathRouteProps> = [
   {
@@ -25,5 +26,9 @@ export const privateRoutes: Array<PathRouteProps> = [
   {
     path: '/dashboard',
     element: <Dashboard />,
+  },
+  {
+    path: '/dashboard/new-order',
+    element: <NewOrder />
   }
 ];
