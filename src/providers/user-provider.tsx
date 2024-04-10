@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { IUser } from '~/api/types';
 
 type State = {
@@ -38,6 +38,7 @@ const stateReducer = (state: State, action: Action) => {
 
 const StateContextProvider = ({ children }: StateContextProviderProps) => {
   const [state, dispatch] = React.useReducer(stateReducer, initialState);
+
   const value = { state, dispatch };
   return (
     <StateContext.Provider value={value}>{children}</StateContext.Provider>

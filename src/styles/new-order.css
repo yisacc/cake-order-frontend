@@ -1,0 +1,31 @@
+.dropdown-container{
+  background-color: rgb(55 65 81 / 1) !important;
+  border:none !important;
+}
+
+.dropdown-content{
+  background-color: rgb(55 65 81 / 1) !important;
+  border:none !important;
+}
+.dropdown-content .panel-content .select-panel{
+  background-color: rgb(55 65 81 / 1) !important;
+  border:none !important;
+}
+.dropdown-content .panel-content .select-panel:hover{
+  background-color: rgb(55 65 81 / 1) !important;
+  border:none !important;
+}
+.dropdown-content .panel-content .select-panel .search input{
+  background-color: rgb(55 65 81 / 1) !important;
+  border:none !important;
+}
+
+.dropdown-content  .panel-content .select-panel .options li:hover .item-renderer span{ 
+  color: black !important;
+}
+.dropdown-content  .panel-content .select-panel .options li .item-renderer input:checked + span{ 
+  color: black !important;
+}
+
+
+

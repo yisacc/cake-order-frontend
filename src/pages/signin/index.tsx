@@ -1,14 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
-import { Form, useLocation, useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
+import { FormProvider, SubmitHandler, set, useForm } from "react-hook-form";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { TypeOf, object, string } from "zod";
 import { getMeFn, loginUserFn } from "~/api/auth-api";
 import { ILoginResponse, IUser } from "~/api/types";
 import FormField from "~/components/FormField";
 import CONTENT from "~/data/signin-data";
+import delay from "~/lib/delay";
 import useQueryEvents from "~/lib/query-wrapper";
 import { useStateContext } from "~/providers/user-provider";
 
@@ -26,8 +28,11 @@ const loginSchema = object({
 export type LoginInput = TypeOf<typeof loginSchema>;
 
 const Signin = () => {
-
   const navigate = useNavigate();
+  const location = useLocation();
+  const [, setCookie] = useCookies(['access_token', 'refresh_token', 'logged_in']);
+
+  const from = ((location.state as any)?.from.pathname as string) || '/dashboard';
 
 
   const methods = useForm<LoginInput>({
@@ -51,13 +56,16 @@ const Signin = () => {
 
   const { mutate: loginUser, status } = useMutation<ILoginResponse, Error, LoginInput>({
     mutationFn: async (userData: LoginInput) => loginUserFn(userData),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setCookie('access_token', data.tokens.access.token);
+      setCookie('refresh_token', data.tokens.refresh.token);
+      delay(2000)
       query.refetch();
+      setCookie('logged_in', true);
       toast.success('You successfully logged in');
-      navigate('/dashboard');
+      navigate(from);
     },
     onError: (error: any) => {
-      console.log(error)
       if (Array.isArray((error as any).response.data.error)) {
         (error as any).response.data.error.forEach((el: any) =>
           toast.error(el.message, {

@@ -1,12 +1,15 @@
 export interface IUser {
-  email: string;
-  _id: string;
   id: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
+  email: string;
 }
-
+export interface IToken {
+  token: string;
+  expires: string;
+}
+export interface ITokens {
+  access: IToken;
+  refresh: IToken;
+}
 export interface GenericResponse {
   status: string;
   message: string;
@@ -14,7 +17,8 @@ export interface GenericResponse {
 
 export interface ILoginResponse {
   status: string;
-  access_token: string;
+  user: IUser;
+  tokens: ITokens;
 }
 
 
@@ -32,5 +36,45 @@ export interface IUserResponse {
   status: string;
   data: {
     user: IUser;
+  };
+}
+
+export interface ICakeShape {
+  id: string;
+  name: string;
+  price: number;
+}
+
+export interface ICakeShapeResponse {
+  status: string;
+  data: {
+    shapes: ICakeShape[];
+  };
+}
+
+export interface ICakeSize {
+  id: string;
+  size: string;
+  price: number;
+}
+
+export interface ICakeSizeResponse {
+  status: string;
+  data: {
+    sizes: ICakeSize[];
+  };
+}
+
+export interface ICakeTopping {
+  id: string;
+  type: string;
+  quantity: number;
+  price: number;
+}
+
+export interface ICakeToppingResponse {
+  status: string;
+  data: {
+    toppings: ICakeTopping[];
   };
 }

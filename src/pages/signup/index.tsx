@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { useCookies } from "react-cookie";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -29,6 +30,8 @@ export type RegisterInput = TypeOf<typeof registerSchema>;
 
 const Signup = () => {
   const navigate = useNavigate();
+  const [, setCookie] = useCookies(['access_token', 'refresh_token', 'logged_in']);
+
 
   const methods = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -37,7 +40,10 @@ const Signup = () => {
   const { mutate, status } = useMutation({
     mutationFn: (userData: Omit<RegisterInput, 'passwordConfirm'>) => signUpUserFn(userData),
     onSuccess(data) {
-      toast.success(data?.message);
+      setCookie('access_token', data.tokens.access.token);
+      setCookie('refresh_token', data.tokens.refresh.token);
+      setCookie('logged_in', true);
+      toast.success("Account created successfully");
       navigate('/signin');
     },
     onError(error: any) {
