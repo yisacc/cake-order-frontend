@@ -1,5 +1,4 @@
 import CONTENT from "~/data/new-order-data";
-import { MultiSelect } from "react-multi-select-component";
 import { useEffect, useState } from "react";
 import "~/styles/new-order.css"
 import { useQuery } from "@tanstack/react-query";
@@ -10,12 +9,7 @@ import useQueryEvents from "~/lib/query-wrapper";
 import { toast } from "react-toastify";
 import Loader from "~/design-system/components/Loader";
 import { ICakeShape, ICakeSize, ICakeTopping } from "~/api/types";
-
-const options = [
-  { label: "Grapes 🍇", value: "grapes" },
-  { label: "Mango 🥭", value: "mango" },
-  { label: "Strawberry 🍓", value: "strawberry" },
-];
+import delay from "~/lib/delay";
 
 const NewOrder = () => {
   const [, , removeCookie] = useCookies();
@@ -31,7 +25,19 @@ const NewOrder = () => {
       removeCookie('access_token');
       removeCookie('refresh_token');
       removeCookie('logged_in');
+    },
+
+    onError: (data) => {
+      if (data.response.status === 404) {
+        removeCookie('access_token');
+        removeCookie('refresh_token');
+        removeCookie('logged_in');
+        delay(2000)
+        toast.success("You have been logged out");
+
+      }
     }
+
   })
   const queryShapes = useQuery({
     queryKey: ["cake-shapes"], queryFn: getCakeShapes,
@@ -48,12 +54,45 @@ const NewOrder = () => {
   const queryToppings = useQuery({
     queryKey: ["cake-toppings"], queryFn: getCakeToppings,
     enabled: true,
-    select: (data) => (data as unknown as ICakeTopping[]).map((topping: any) => ({ label: topping.type, value: topping.id })),
+    select: (data) => (data as unknown as ICakeTopping[]).map((topping: any) => ({ label: topping.type, value: topping.id, quantity: 0 })),
     retry: 1,
   });
 
+  const [selectedToppings, setSelectedToppings] = useState<{ value: string, quantity: number }[]>([]);
+  const [maxStrawberry, setMaxStrawberry] = useState(12);
+  const handleQuantityChange = (value: string, quantity: number) => {
+    if (quantity === 0) {
+      const index = selectedToppings?.findIndex((topping) => topping.value === value);
+      if (index !== -1) {
+        const strawberry = selectedToppings[index];
+        setSelectedToppings((prev) => prev?.filter((topping) => topping.value !== value));
+        setMaxStrawberry((prev) => prev + strawberry.quantity);
 
-  const [selected, setSelected] = useState([]);
+      }
+    } else {
+      const index = selectedToppings?.findIndex((topping) => topping.value === value);
+      if (index !== -1) {
+        const strawberry = selectedToppings[index];
+        if ((quantity) > maxStrawberry + strawberry.quantity) {
+          toast.error("You can't add more than 12 strawberries")
+          return;
+        }
+        setSelectedToppings((prev) => [...prev.slice(0, index), { value, quantity }, ...prev.slice(index + 1)]);
+        setMaxStrawberry((prev) => prev + (strawberry.quantity - quantity));
+
+      } else {
+        if (quantity > maxStrawberry) {
+          toast.error("You can't add more than 12 strawberries")
+          return;
+        }
+        setSelectedToppings((prev) => [...prev, { value, quantity }]);
+        setMaxStrawberry((prev) => prev - quantity);
+      }
+
+    }
+  }
+
+
   return (
     <section id={CONTENT.id} className="dark:bg-gray-800 bg-white relative overflow-hidden w-screen h-screen">
       <nav className="h-24 sm:h-32 flex items-center z-30 w-full">
@@ -63,7 +102,7 @@ const NewOrder = () => {
           </div>
           <div className="flex items-center">
             <nav className="font-sen text-gray-800 dark:text-white uppercase text-lg lg:flex items-center hidden">
-              <button className="py-2 px-6 flex bg-transparent border-blue-400">
+              <button onClick={() => query.refetch()} className="py-2 px-6 flex bg-transparent border-blue-400">
                 {CONTENT.logout}
               </button>
             </nav>
@@ -103,19 +142,25 @@ const NewOrder = () => {
           }
         </div>
         <div className="mb-6">
-          <label htmlFor="cake-topping" className="block mb-2 text-base font-medium text-gray-900 dark:text-white">{CONTENT.toppingsForTheCake}</label>
+          <label htmlFor="cake-topping" className="block text-xl text-center justify-center mb-4 font-medium text-gray-900 dark:text-white">{CONTENT.toppingsForTheCake}</label>
           {queryToppings.isLoading && <Loader />}
           {queryToppings.isFetched &&
-          <MultiSelect
-            options={queryToppings.data || []}
-            value={selected}
-            onChange={setSelected}
-            labelledBy={CONTENT.toppingsForTheCake}
-            className="block w-full px-2 py-2 text-base border rounded-lg bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
-            ItemRenderer={DefaultItemRenderer}
-            hasSelectAll={false}
-          />
-          }
+            queryToppings.data?.map((topping, index) => (
+              <div className="flex justify-between mb-2" key={index}>
+                <label className="block mb-2 text-base font-medium text-gray-900 dark:text-white">{topping.label}</label>
+                <input
+                  className="bg-gray-700 w-1/2 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
+                  type="number"
+                  min="0"
+                  step="4"
+                  max={12}
+                  defaultValue={topping.quantity}
+                  onChange={event => handleQuantityChange(topping.value, Number(event.target.value))}
+                  onKeyPress={(e) => e.preventDefault()}
+                  value={selectedToppings.find((selectedTopping) => selectedTopping.value === topping.value)?.quantity || 0}
+                />
+              </div>
+            ))}
         </div>
         <div className="mb-6">
           <label htmlFor="message" className="block mb-2 text-base font-medium text-gray-900 dark:text-white">{CONTENT.message}</label>
@@ -129,43 +174,3 @@ const NewOrder = () => {
 }
 
 export default NewOrder;
-
-export interface Option {
-  value: any;
-  label: string;
-  key?: string;
-  disabled?: boolean;
-}
-interface IDefaultItemRendererProps {
-  checked: boolean;
-  option: Option;
-  disabled?: boolean;
-  onClick: () => void;
-}
-
-const DefaultItemRenderer = ({
-  checked,
-  option,
-  onClick,
-  disabled,
-}: IDefaultItemRendererProps) => (
-  <div className={`item-renderer flex flex-row justify-between ${disabled ? "disabled" : ""}`}>
-    <div>
-      <input
-        type="checkbox"
-        onChange={onClick}
-        checked={checked}
-        tabIndex={-1}
-        disabled={disabled}
-      />
-      <span>{option.label}</span>
-    </div>
-    <input
-      type="number"
-      className="bg-gray-700 border rounded-lg text-center border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
-      max={12}
-      min={1}
-      defaultValue={1}
-    />
-  </div>
-);

@@ -8,9 +8,9 @@ import useQueryEvents from "~/lib/query-wrapper";
 const Dashboard = () => {
   const [, , removeCookie] = useCookies();
   const query = useQuery({
-    queryKey: ["logoutUser"], queryFn: logoutUserFn,
+    queryKey: ["logoutUser"],
+    queryFn: logoutUserFn,
     enabled: false,
-    select: (data) => data,
     retry: 1,
   });
   useQueryEvents(query, {
@@ -31,9 +31,7 @@ const Dashboard = () => {
           <div className="flex items-center">
             <nav className="font-sen text-gray-800 dark:text-white uppercase text-lg lg:flex items-center hidden">
               <button onClick={() => {
-                console.log("logout");
                 query.refetch();
-
               }
               }
                 className="py-2 px-6 flex bg-transparent border-blue-400">

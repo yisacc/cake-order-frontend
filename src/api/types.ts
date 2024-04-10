@@ -72,3 +72,7 @@ export interface ICakeToppingResponse {
   status: string;
   data: ICakeTopping[];
 }
+
+export interface IToppingsQuantity {
+  [key: string]: number;
+}

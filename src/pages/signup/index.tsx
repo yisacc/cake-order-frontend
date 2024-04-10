@@ -9,6 +9,7 @@ import { TypeOf, object, string } from "zod";
 import { signUpUserFn } from "~/api/auth-api";
 import FormField from "~/design-system/components/FormField";
 import CONTENT from "~/data/signup-data";
+import delay from "~/lib/delay";
 
 
 const registerSchema = object({
@@ -42,9 +43,10 @@ const Signup = () => {
     onSuccess(data) {
       setCookie('access_token', data.tokens.access.token);
       setCookie('refresh_token', data.tokens.refresh.token);
+      delay(2000)
       setCookie('logged_in', true);
       toast.success("Account created successfully");
-      navigate('/signin');
+      navigate('/dashboard');
     },
     onError(error: any) {
       if (Array.isArray((error as any).response.data.error)) {
