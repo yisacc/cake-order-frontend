@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { TypeOf, object, string } from "zod";
 import { signUpUserFn } from "~/api/auth-api";
-import FormField from "~/components/FormField";
+import FormField from "~/design-system/components/FormField";
 import CONTENT from "~/data/signup-data";
 
 

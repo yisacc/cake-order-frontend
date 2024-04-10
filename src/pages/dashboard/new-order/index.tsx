@@ -4,6 +4,12 @@ import { useEffect, useState } from "react";
 import "~/styles/new-order.css"
 import { useQuery } from "@tanstack/react-query";
 import { getCakeShapes, getCakeSizes, getCakeToppings } from "~/api/cake-order-api";
+import { useCookies } from "react-cookie";
+import { logoutUserFn } from "~/api/auth-api";
+import useQueryEvents from "~/lib/query-wrapper";
+import { toast } from "react-toastify";
+import Loader from "~/design-system/components/Loader";
+import { ICakeShape, ICakeSize, ICakeTopping } from "~/api/types";
 
 const options = [
   { label: "Grapes 🍇", value: "grapes" },
@@ -12,30 +18,40 @@ const options = [
 ];
 
 const NewOrder = () => {
+  const [, , removeCookie] = useCookies();
+  const query = useQuery({
+    queryKey: ["logoutUser"],
+    queryFn: logoutUserFn,
+    enabled: false,
+    retry: 1,
+  });
+  useQueryEvents(query, {
+    onSuccess: () => {
+      toast.success("You have been logged out");
+      removeCookie('access_token');
+      removeCookie('refresh_token');
+      removeCookie('logged_in');
+    }
+  })
   const queryShapes = useQuery({
     queryKey: ["cake-shapes"], queryFn: getCakeShapes,
     enabled: true,
-    select: (data) => data.data.shapes,
+    select: (data) => data as unknown as ICakeShape[],
     retry: 1,
   });
   const querySizes = useQuery({
     queryKey: ["cake-sizes"], queryFn: getCakeSizes,
     enabled: true,
-    select: (data) => data.data.sizes,
+    select: (data) => data as unknown as ICakeSize[],
     retry: 1,
   });
   const queryToppings = useQuery({
     queryKey: ["cake-toppings"], queryFn: getCakeToppings,
     enabled: true,
-    select: (data) => data.data.toppings,
+    select: (data) => (data as unknown as ICakeTopping[]).map((topping: any) => ({ label: topping.type, value: topping.id })),
     retry: 1,
   });
 
-  useEffect(() => {
-    console.log(queryShapes.data);
-    console.log(querySizes.data);
-    console.log(queryToppings.data);
-  }, [queryShapes.data, querySizes.data, queryToppings.data])
 
   const [selected, setSelected] = useState([]);
   return (
@@ -66,28 +82,32 @@ const NewOrder = () => {
         <h1 className="text-3xl font-bold text-white mb-8 text-center">{CONTENT.title}</h1>
         <div className="mb-6">
           <label htmlFor="cake-shape" className="block mb-2 text-base font-medium text-gray-900 dark:text-white">{CONTENT.shapeOfTheCake}</label>
-          <select id="cake-shape" className="block w-full px-4 py-3 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-            <option selected>{CONTENT.chooseShape}</option>
-            <option value="US">United States</option>
-            <option value="CA">Canada</option>
-            <option value="FR">France</option>
-            <option value="DE">Germany</option>
-          </select>
+          {queryShapes.isLoading && <Loader />}
+          {queryShapes.isFetched &&
+            <select id="cake-shape" className="block w-full px-4 py-3 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+              {queryShapes.data?.map((shape: any) => (
+                <option key={shape.id} value={shape.id}>{shape.shape}</option>
+              ))}
+            </select>
+          }
         </div>
         <div className="mb-6">
           <label htmlFor="cake-size" className="block mb-2 text-base font-medium text-gray-900 dark:text-white">{CONTENT.sizeOfTheCake}</label>
-          <select id="cake-size" className="block w-full px-4 py-3 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-            <option selected>{CONTENT.chooseSize}</option>
-            <option value="US">United States</option>
-            <option value="CA">Canada</option>
-            <option value="FR">France</option>
-            <option value="DE">Germany</option>
-          </select>
+          {querySizes.isLoading && <Loader />}
+          {querySizes.isFetched &&
+            <select id="cake-size" className="block w-full px-4 py-3 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+              {querySizes.data?.map((size: any) => (
+                <option key={size.id} value={size.id}>{size.size}</option>
+              ))}
+            </select>
+          }
         </div>
         <div className="mb-6">
           <label htmlFor="cake-topping" className="block mb-2 text-base font-medium text-gray-900 dark:text-white">{CONTENT.toppingsForTheCake}</label>
+          {queryToppings.isLoading && <Loader />}
+          {queryToppings.isFetched &&
           <MultiSelect
-            options={options}
+            options={queryToppings.data || []}
             value={selected}
             onChange={setSelected}
             labelledBy={CONTENT.toppingsForTheCake}
@@ -95,6 +115,7 @@ const NewOrder = () => {
             ItemRenderer={DefaultItemRenderer}
             hasSelectAll={false}
           />
+          }
         </div>
         <div className="mb-6">
           <label htmlFor="message" className="block mb-2 text-base font-medium text-gray-900 dark:text-white">{CONTENT.message}</label>

@@ -47,9 +47,7 @@ export interface ICakeShape {
 
 export interface ICakeShapeResponse {
   status: string;
-  data: {
-    shapes: ICakeShape[];
-  };
+  data: ICakeShape[];
 }
 
 export interface ICakeSize {
@@ -60,9 +58,7 @@ export interface ICakeSize {
 
 export interface ICakeSizeResponse {
   status: string;
-  data: {
-    sizes: ICakeSize[];
-  };
+  data: ICakeSize[];
 }
 
 export interface ICakeTopping {
@@ -74,7 +70,5 @@ export interface ICakeTopping {
 
 export interface ICakeToppingResponse {
   status: string;
-  data: {
-    toppings: ICakeTopping[];
-  };
+  data: ICakeTopping[];
 }
