@@ -9,7 +9,6 @@ import useQueryEvents from "~/lib/query-wrapper";
 import { toast } from "react-toastify";
 import Loader from "~/design-system/components/Loader";
 import { CakeOrder, ICakeShape, ICakeSize, ICakeTopping } from "~/api/types";
-import delay from "~/lib/delay";
 
 const NewOrder = () => {
   const [, , removeCookie] = useCookies();
