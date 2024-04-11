@@ -76,3 +76,16 @@ export interface ICakeToppingResponse {
 export interface IToppingsQuantity {
   [key: string]: number;
 }
+
+export interface CakeOrder {
+  cakeShapeId: string;
+  cakeSizeId: string;
+  toppingIds?: string[];
+  message?: string;
+}
+
+export interface CakePriceResponse {
+  status: string;
+  data: { price: number };
+}
+

@@ -2,7 +2,7 @@ import CONTENT from "~/data/new-order-data";
 import { useEffect, useState } from "react";
 import "~/styles/new-order.css"
 import { useQuery } from "@tanstack/react-query";
-import { getCakeShapes, getCakeSizes, getCakeToppings } from "~/api/cake-order-api";
+import { getCakePrice, getCakeShapes, getCakeSizes, getCakeToppings } from "~/api/cake-order-api";
 import { useCookies } from "react-cookie";
 import { logoutUserFn } from "~/api/auth-api";
 import useQueryEvents from "~/lib/query-wrapper";
@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import Loader from "~/design-system/components/Loader";
 import { ICakeShape, ICakeSize, ICakeTopping } from "~/api/types";
 import delay from "~/lib/delay";
+import { set } from "react-hook-form";
 
 const NewOrder = () => {
   const [, , removeCookie] = useCookies();
@@ -92,6 +93,33 @@ const NewOrder = () => {
     }
   }
 
+  const [cakeShape, setCakeShape] = useState<string>('');
+  const [cakeSize, setCakeSize] = useState<string>('');
+  const [toppings, setToppings] = useState<string[]>([]);
+  const [message, setMessage] = useState<string>('');
+
+  useEffect(() => {
+    if (queryShapes.isFetched && queryShapes?.data && queryShapes.data.length > 0) {
+      setCakeShape(queryShapes.data[0].id);
+    }
+    if (querySizes.isFetched && querySizes?.data && querySizes.data.length > 0) {
+      setCakeSize(querySizes.data[0].id);
+    }
+  }, [queryShapes.isFetched, querySizes.isFetched, queryShapes.data, querySizes.data]);
+
+  useEffect(() => {
+    setToppings(
+      selectedToppings.flatMap((topping) => Array(topping.quantity).fill(topping.value))
+    );
+  }, [selectedToppings]);
+
+
+  const { status, data } = useQuery({
+    queryKey: ["getPrice", { cakeShape, cakeSize, toppings, message }],
+    queryFn: () => getCakePrice({ cakeShapeId: cakeShape, cakeSizeId: cakeSize, toppingIds: toppings, message }),
+    enabled: true,
+    retry: 1,
+  })
 
   return (
     <section id={CONTENT.id} className="dark:bg-gray-800 bg-white relative overflow-hidden w-screen h-screen">
@@ -123,7 +151,7 @@ const NewOrder = () => {
           <label htmlFor="cake-shape" className="block mb-2 text-base font-medium text-gray-900 dark:text-white">{CONTENT.shapeOfTheCake}</label>
           {queryShapes.isLoading && <Loader />}
           {queryShapes.isFetched &&
-            <select id="cake-shape" className="block w-full px-4 py-3 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <select onChange={(e) => setCakeShape(e.target.value)} id="cake-shape" className="block w-full px-4 py-3 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
               {queryShapes.data?.map((shape: any) => (
                 <option key={shape.id} value={shape.id}>{shape.shape}</option>
               ))}
@@ -134,7 +162,7 @@ const NewOrder = () => {
           <label htmlFor="cake-size" className="block mb-2 text-base font-medium text-gray-900 dark:text-white">{CONTENT.sizeOfTheCake}</label>
           {querySizes.isLoading && <Loader />}
           {querySizes.isFetched &&
-            <select id="cake-size" className="block w-full px-4 py-3 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <select onChange={(e) => setCakeSize(e.target.value)} id="cake-size" className="block w-full px-4 py-3 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
               {querySizes.data?.map((size: any) => (
                 <option key={size.id} value={size.id}>{size.size}</option>
               ))}
@@ -162,10 +190,18 @@ const NewOrder = () => {
               </div>
             ))}
         </div>
+
+
         <div className="mb-6">
           <label htmlFor="message" className="block mb-2 text-base font-medium text-gray-900 dark:text-white">{CONTENT.message}</label>
-          <input type="text" id="message" className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-base focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+          <input value={message} onChange={(e) => setMessage(e.target.value)} maxLength={20} type="text" id="message" className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-base focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
         </div>
+        <div className="mb-6 flex gap-11">
+          <h4 className="">Price: </h4>
+          {status === "pending" && <Loader />}
+          {status === "success" && <h4>{(data.price).toString() ?? ""}</h4>}
+        </div>
+
         <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
       </form>
     </section>
