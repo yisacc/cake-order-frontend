@@ -11,4 +11,7 @@ export default defineConfig({
   esbuild: {
     drop: process.env.PROD === "1" ? ["console"] : [],
   },
+  preview: {
+    port: 8080,
+  },
 })
