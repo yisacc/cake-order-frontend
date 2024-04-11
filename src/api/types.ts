@@ -1,3 +1,4 @@
+import { CakeOrder } from './types';
 export interface IUser {
   id: string;
   email: string;
@@ -87,5 +88,11 @@ export interface CakeOrder {
 export interface CakePriceResponse {
   status: string;
   data: { price: number };
+}
+
+export interface CakeOrderResponse {
+  status: string;
+  order: CakeOrder;
+  message: string;
 }
 

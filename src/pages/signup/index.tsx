@@ -46,7 +46,7 @@ const Signup = () => {
       delay(2000)
       setCookie('logged_in', true);
       toast.success("Account created successfully");
-      navigate('/dashboard');
+      navigate('/signin');
     },
     onError(error: any) {
       if (Array.isArray((error as any).response.data.error)) {

@@ -1,5 +1,5 @@
 import { authApi } from "./auth-api";
-import { CakeOrder, CakePriceResponse, ICakeShapeResponse, ICakeSizeResponse, ICakeToppingResponse } from "./types";
+import { CakeOrder, CakeOrderResponse, CakePriceResponse, ICakeShapeResponse, ICakeSizeResponse, ICakeToppingResponse } from "./types";
 
 export const getCakeShapes = async () => {
   const response = await authApi.get<ICakeShapeResponse>('cake-shapes');
@@ -17,5 +17,10 @@ export const getCakeToppings = async () => {
 
 export const getCakePrice = async (order: CakeOrder) => {
   const response = await authApi.post<CakePriceResponse>('orders/price', order);
+  return response.data;
+}
+
+export const createOrder = async (order: CakeOrder) => {
+  const response = await authApi.post<CakeOrderResponse>('orders', order);
   return response.data;
 }

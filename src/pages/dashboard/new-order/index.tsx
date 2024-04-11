@@ -1,16 +1,15 @@
 import CONTENT from "~/data/new-order-data";
 import { useEffect, useState } from "react";
 import "~/styles/new-order.css"
-import { useQuery } from "@tanstack/react-query";
-import { getCakePrice, getCakeShapes, getCakeSizes, getCakeToppings } from "~/api/cake-order-api";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createOrder, getCakePrice, getCakeShapes, getCakeSizes, getCakeToppings } from "~/api/cake-order-api";
 import { useCookies } from "react-cookie";
 import { logoutUserFn } from "~/api/auth-api";
 import useQueryEvents from "~/lib/query-wrapper";
 import { toast } from "react-toastify";
 import Loader from "~/design-system/components/Loader";
-import { ICakeShape, ICakeSize, ICakeTopping } from "~/api/types";
+import { CakeOrder, ICakeShape, ICakeSize, ICakeTopping } from "~/api/types";
 import delay from "~/lib/delay";
-import { set } from "react-hook-form";
 
 const NewOrder = () => {
   const [, , removeCookie] = useCookies();
@@ -120,7 +119,30 @@ const NewOrder = () => {
     enabled: true,
     retry: 1,
   })
-
+  const { mutate, status: orderCreateStatus } = useMutation({
+    mutationFn: (data: CakeOrder) => createOrder(data),
+    onSuccess() {
+      toast.success("Order created successfully")
+    },
+    onError(error: any) {
+      if (Array.isArray((error as any).response.data.error)) {
+        (error as any).response.data.error.forEach((el: any) =>
+          toast.error(el.message, {
+            position: 'top-right',
+          })
+        );
+      } else {
+        toast.error((error as any).response.data.message, {
+          position: 'top-right',
+        });
+      }
+    },
+  }
+  );
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    mutate({ cakeShapeId: cakeShape, cakeSizeId: cakeSize, toppingIds: toppings, message });
+  }
   return (
     <section id={CONTENT.id} className="dark:bg-gray-800 bg-white relative overflow-hidden w-screen h-screen">
       <nav className="h-24 sm:h-32 flex items-center z-30 w-full">
@@ -202,7 +224,7 @@ const NewOrder = () => {
           {status === "success" && <h4>{(data.price).toString() ?? ""}</h4>}
         </div>
 
-        <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+        <button disabled={orderCreateStatus === "pending"} onClick={handleSubmit} type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
       </form>
     </section>
 
