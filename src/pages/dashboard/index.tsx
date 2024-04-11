@@ -3,7 +3,6 @@ import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { logoutUserFn } from "~/api/auth-api";
 import CONTENT from "~/data/dashbord-data";
-import delay from "~/lib/delay";
 import useQueryEvents from "~/lib/query-wrapper";
 
 const Dashboard = () => {

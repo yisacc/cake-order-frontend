@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { IUser } from '~/api/types';
 
 type State = {

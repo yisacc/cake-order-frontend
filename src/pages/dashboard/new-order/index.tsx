@@ -25,17 +25,6 @@ const NewOrder = () => {
       removeCookie('access_token');
       removeCookie('refresh_token');
       removeCookie('logged_in');
-    },
-
-    onError: (data) => {
-      if (data.response.status === 404) {
-        removeCookie('access_token');
-        removeCookie('refresh_token');
-        removeCookie('logged_in');
-        delay(2000)
-        toast.success("You have been logged out");
-
-      }
     }
 
   })
@@ -139,7 +128,7 @@ const NewOrder = () => {
     },
   }
   );
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
     mutate({ cakeShapeId: cakeShape, cakeSizeId: cakeSize, toppingIds: toppings, message });
   }
@@ -221,7 +210,7 @@ const NewOrder = () => {
         <div className="mb-6 flex gap-11">
           <h4 className="">Price: </h4>
           {status === "pending" && <Loader />}
-          {status === "success" && <h4>{(data.price).toString() ?? ""}</h4>}
+          {status === "success" && <h4>{((data as any).price).toString() ?? ""}</h4>}
         </div>
 
         <button disabled={orderCreateStatus === "pending"} onClick={handleSubmit} type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>

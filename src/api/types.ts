@@ -1,4 +1,3 @@
-import { CakeOrder } from './types';
 export interface IUser {
   id: string;
   email: string;
